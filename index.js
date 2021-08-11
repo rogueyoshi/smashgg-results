@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-const fs = require('fs');
+const fs = require("fs");
 const fetch = require("node-fetch");
-const { GraphQLClient } = require('graphql-request');
+const { GraphQLClient } = require("graphql-request");
 
 const Mode = Object.freeze({
-  NAMES_ONLY: Symbol('NAMES_ONLY'),
-  TWITTER_OR_NAME: Symbol('TWITTER_OR_NAME'),
-  NAME_AND_TWITTER: Symbol('NAME_AND_TWITTER'),
-})
+  NAMES_ONLY: Symbol("NAMES_ONLY"),
+  TWITTER_OR_NAME: Symbol("TWITTER_OR_NAME"),
+  NAME_AND_TWITTER: Symbol("NAME_AND_TWITTER"),
+});
 
 const STANDINGS_QUERY = `
 query StandingsQuery($slug: String) {
@@ -43,8 +43,8 @@ query StandingsQuery($slug: String) {
 }
 `;
 
-const ENDPOINT = 'https://api.smash.gg/gql/alpha';
-const TOKEN = fs.readFileSync('SMASHGG_TOKEN', 'utf8').trim();
+const ENDPOINT = "https://api.smash.gg/gql/alpha";
+const TOKEN = fs.readFileSync("SMASHGG_TOKEN", "utf8").trim();
 const SLUG = process.argv[2];
 
 async function main() {
@@ -52,7 +52,7 @@ async function main() {
     headers: { authorization: `Bearer ${TOKEN}` },
   });
   const tournamentData = await graphQLClient.request(STANDINGS_QUERY, {
-    slug: SLUG
+    slug: SLUG,
   });
 
   const t = tournamentData.tournament;
@@ -68,24 +68,27 @@ async function main() {
     messages.push(`\
 ${intro}
 
-${placings.join('\n')}
+${placings.join("\n")}
 
-Full standings: https://smash.gg/${e.slug.replace('/event/', '/events/')}/standings`);
+Full standings: https://smash.gg/${e.slug.replace(
+      "/event/",
+      "/events/"
+    )}/standings`);
   }
 
-  console.log(messages.join('\n---------\n'));
+  console.log(messages.join("\n---------\n"));
 }
 
 function placingString(nameMode, standing) {
   const name = standing.entrant.name;
   const twitter = standing.entrant.participants
-    .map(p => p.user)
-    .filter(t => t != null)
-    .map(user => user.authorizations && user.authorizations[0])
-    .filter(t => t != null)
-    .map(authorization => authorization.externalUsername)
-    .map(t => '@' + t)
-    .join(', ');
+    .map((p) => p.user)
+    .filter((t) => t != null)
+    .map((user) => user.authorizations && user.authorizations[0])
+    .filter((t) => t != null)
+    .map((authorization) => authorization.externalUsername)
+    .map((t) => "@" + t)
+    .join(", ");
   const placing = ordinal(standing.standing);
 
   let nameString;
@@ -97,7 +100,7 @@ function placingString(nameMode, standing) {
       nameString = twitter ? `${twitter}` : name;
       break;
     case Mode.NAME_AND_TWITTER:
-      nameString = `${name}${twitter ? ` (${twitter})` : ''}`;
+      nameString = `${name}${twitter ? ` (${twitter})` : ""}`;
       break;
   }
   return `${placing}: ${nameString}`;
@@ -106,23 +109,23 @@ function placingString(nameMode, standing) {
 function ordinal(i) {
   const abs = Math.abs(i);
   const rem = abs % 10;
-  const isTeen = Math.floor(abs % 100 / 10) == 1;
+  const isTeen = Math.floor((abs % 100) / 10) == 1;
 
-  let suffix = 'th';
+  let suffix = "th";
   if (!isTeen) {
     switch (rem) {
       case 1:
-        suffix = 'st';
+        suffix = "st";
         break;
       case 2:
-        suffix = 'nd';
+        suffix = "nd";
         break;
       case 3:
-        suffix = 'rd';
+        suffix = "rd";
         break;
     }
   }
   return i + suffix;
 }
 
-main().catch(error => console.error(error));
+main().catch((error) => console.error(error));
