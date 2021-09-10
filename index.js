@@ -84,9 +84,10 @@ function placingString(nameMode, standing) {
   const twitter = standing.entrant.participants
     .map((p) => p.user)
     .filter((t) => t != null)
-    .map((user) => user.authorizations && user.authorizations[0])
+    .map((user) => user.authorizations)
     .filter((t) => t != null)
-    .map((authorization) => authorization.externalUsername)
+    .filter((authorizations) => authorizations[0] != null)
+    .map((authorizations) => authorizations[0].externalUsername)
     .map((t) => "@" + t)
     .join(", ");
   const placing = ordinal(standing.standing);
@@ -103,29 +104,37 @@ function placingString(nameMode, standing) {
       nameString = `${name}${twitter ? ` (${twitter})` : ""}`;
       break;
   }
-  return `${placing}: ${nameString}`;
+  return `${placing} ${nameString}`;
 }
 
 function ordinal(i) {
+  // Return i as a string, but with the correct ordinal indicator with suffix. Unless it's 1, 2, or 3, then return the Medal emoji.
+  if (i === 1) return "🥇";
+  if (i === 2) return "🥈";
+  if (i === 3) return "🥉";
+  return i + "th:";
+}
+
+/*function ordinal(i) {
   const abs = Math.abs(i);
   const rem = abs % 10;
-  const isTeen = Math.floor((abs % 100) / 10) == 1;
+  const isTeen = Math.floor(abs % 100 / 10) == 1;
 
-  let suffix = "th";
+  let suffix = 'th';
   if (!isTeen) {
     switch (rem) {
       case 1:
-        suffix = "st";
+        suffix = 'st';
         break;
       case 2:
-        suffix = "nd";
+        suffix = 'nd';
         break;
       case 3:
-        suffix = "rd";
+        suffix = 'rd';
         break;
     }
   }
   return i + suffix;
-}
+}*/
 
 main().catch((error) => console.error(error));
