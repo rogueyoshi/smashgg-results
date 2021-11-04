@@ -9,33 +9,19 @@ const Mode = Object.freeze({
   NAME_AND_TWITTER: Symbol("NAME_AND_TWITTER"),
 });
 
-const STANDINGS_QUERY = `
-query StandingsQuery($slug: String) {
+const TWITTER_QUERY = `
+query TwitterQuery($slug: String) {
   tournament(slug: $slug){
-    name
-    slug
     events {
-      id
-      name
-      slug
-      numEntrants
-      standings(query: {
-        page: 1
-        perPage: 8
-        sortBy: "standing"
-      }){
-        nodes{
-          standing
-          entrant{
-            name
+      entrants {
+        nodes {
             participants {
               user {
                 authorizations(types: [TWITTER]) {
                   externalUsername
                 }
               }
-            }
-          }
+    			}
         }
       }
     }
@@ -51,90 +37,27 @@ async function main() {
   const graphQLClient = new GraphQLClient(ENDPOINT, {
     headers: { authorization: `Bearer ${TOKEN}` },
   });
-  const tournamentData = await graphQLClient.request(STANDINGS_QUERY, {
+  const tournamentData = await graphQLClient.request(TWITTER_QUERY, {
     slug: SLUG,
   });
 
   const t = tournamentData.tournament;
-  const messages = [];
-  for (const e of t.events) {
-    const numPlacings = e.numEntrants > 16 ? 8 : 3;
-    // TODO(Adrian): Try different modes until it fits in a tweet
-    const mode = numPlacings > 4 ? Mode.TWITTER_OR_NAME : Mode.NAME_AND_TWITTER;
-    const intro = `${t.name} - ${e.name} top ${numPlacings}/${e.numEntrants}`;
-    let placings = e.standings.nodes
-      .slice(0, numPlacings)
-      .map(placingString.bind(this, mode));
-    messages.push(`\
-${intro}
+  const handles = [];
+  for (const event of t.events) {
+    // get twitter handles for each entrant using map and filter
 
-${placings.join("\n")}
-
-Full standings: https://smash.gg/${e.slug.replace(
-      "/event/",
-      "/events/"
-    )}/standings`);
-  }
-
-  console.log(messages.join("\n---------\n"));
-}
-
-function placingString(nameMode, standing) {
-  const name = standing.entrant.name;
-  const twitter = standing.entrant.participants
-    .map((p) => p.user)
-    .filter((t) => t != null)
-    .map((user) => user.authorizations)
-    .filter((t) => t != null)
-    .filter((authorizations) => authorizations[0] != null)
-    .map((authorizations) => authorizations[0].externalUsername)
-    .map((t) => "@" + t)
-    .join(", ");
-  const placing = ordinal(standing.standing);
-
-  let nameString;
-  switch (nameMode) {
-    case Mode.NAMES_ONLY:
-      nameString = name;
-      break;
-    case Mode.TWITTER_OR_NAME:
-      nameString = twitter ? `${twitter}` : name;
-      break;
-    case Mode.NAME_AND_TWITTER:
-      nameString = `${name}${twitter ? ` (${twitter})` : ""}`;
-      break;
-  }
-  return `${placing} ${nameString}`;
-}
-
-function ordinal(i) {
-  // Return i as a string, but with the correct ordinal indicator with suffix. Unless it's 1, 2, or 3, then return the Medal emoji.
-  if (i === 1) return "🥇";
-  if (i === 2) return "🥈";
-  if (i === 3) return "🥉";
-  return i + "th";
-}
-
-/*function ordinal(i) {
-  const abs = Math.abs(i);
-  const rem = abs % 10;
-  const isTeen = Math.floor(abs % 100 / 10) == 1;
-
-  let suffix = 'th';
-  if (!isTeen) {
-    switch (rem) {
-      case 1:
-        suffix = 'st';
-        break;
-      case 2:
-        suffix = 'nd';
-        break;
-      case 3:
-        suffix = 'rd';
-        break;
+    for (const entrants of event.entrants.nodes) {
+      for (const participant of entrants.participants) {
+        const user = participant.user;
+        const auth = user.authorizations[0];
+        if (auth) {
+          handles.push("@" + auth.externalUsername);
+        }
+      }
     }
   }
-  return i + suffix;
-}*/
+
+  console.log(handles.join(" "));
+}
 
 main().catch((error) => console.error(error));
