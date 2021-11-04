@@ -3,12 +3,6 @@ const fs = require("fs");
 const fetch = require("node-fetch");
 const { GraphQLClient } = require("graphql-request");
 
-const Mode = Object.freeze({
-  NAMES_ONLY: Symbol("NAMES_ONLY"),
-  TWITTER_OR_NAME: Symbol("TWITTER_OR_NAME"),
-  NAME_AND_TWITTER: Symbol("NAME_AND_TWITTER"),
-});
-
 const TWITTER_QUERY = `
 query TwitterQuery($slug: String) {
   tournament(slug: $slug){
@@ -30,8 +24,10 @@ query TwitterQuery($slug: String) {
 `;
 
 const ENDPOINT = "https://api.smash.gg/gql/alpha";
-const TOKEN = fs.readFileSync("SMASHGG_TOKEN", "utf8").trim();
+const TOKEN = fs.readFileSync("SMASHGG_TOKEN", "UTF8").trim();
 const SLUG = process.argv[2];
+
+const LENGTH = 280;
 
 async function main() {
   const graphQLClient = new GraphQLClient(ENDPOINT, {
@@ -55,7 +51,21 @@ async function main() {
     }
   }
 
-  console.log(handles.join(" "));
+  // TODO: do the above but with map and filter instead of for loops
+
+  // log handles delimited by space, limited to 180 characters per line
+  let line = "";
+  for (const handle of handles) {
+    if (line.length + handle.length + 1 > LENGTH) {
+      console.log(line);
+      line = "";
+    }
+    line += handle + " ";
+  }
+
+  console.log(line);
+
+  //console.log(handles.join(" "));
 }
 
 main().catch((error) => console.error(error));
