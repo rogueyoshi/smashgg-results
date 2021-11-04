@@ -112,7 +112,7 @@ function ordinal(i) {
   if (i === 1) return "🥇";
   if (i === 2) return "🥈";
   if (i === 3) return "🥉";
-  return i + "th:";
+  return i + "th";
 }
 
 /*function ordinal(i) {
