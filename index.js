@@ -44,8 +44,6 @@ async function main() {
   const t = tournamentData.tournament;
   const handles = [];
   for (const event of t.events) {
-    // get twitter handles for each entrant using map and filter
-
     for (const entrants of event.entrants.nodes) {
       for (const participant of entrants.participants) {
         const user = participant.user;
