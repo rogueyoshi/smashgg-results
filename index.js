@@ -40,10 +40,10 @@ async function main() {
   const t = tournamentData.tournament;
   const handles = [];
   for (const event of t.events) {
-    for (const entrants of event.entrants.nodes) {
-      for (const participant of entrants.participants) {
-        const user = participant.user;
-        const auth = user.authorizations[0];
+    for (const entrant of event.entrants?.nodes) {
+      for (const participant of entrant?.participants) {
+        const user = participant?.user;
+        const auth = user?.authorizations[0];
         if (auth) {
           handles.push("@" + auth.externalUsername);
         }
