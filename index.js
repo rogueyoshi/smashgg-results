@@ -58,7 +58,7 @@ async function main() {
   const t = tournamentData.tournament;
   const messages = [];
   for (const e of t.events) {
-    const numPlacings = e.numEntrants > 16 ? 8 : 3;
+    const numPlacings = e.numEntrants > 7 ? 8 : 3;
     // TODO(Adrian): Try different modes until it fits in a tweet
     const mode = numPlacings > 4 ? Mode.TWITTER_OR_NAME : Mode.NAME_AND_TWITTER;
     const intro = `${t.name} - ${e.name} top ${numPlacings}/${e.numEntrants}`;
