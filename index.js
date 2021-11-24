@@ -38,14 +38,15 @@ async function main() {
   });
 
   const t = tournamentData.tournament;
-  const handles = [];
+  const handles = {};
   for (const event of t.events) {
     for (const entrant of event.entrants?.nodes) {
       for (const participant of entrant?.participants) {
         const user = participant?.user;
         const auth = user?.authorizations[0];
         if (auth) {
-          handles.push("@" + auth.externalUsername);
+          const handle = "@" + auth.externalUsername;
+          handles[handle] = true;
         }
       }
     }
@@ -54,16 +55,23 @@ async function main() {
   // TODO: do the above but with map and filter instead of for loops
 
   // log handles delimited by space, limited to 180 characters per line
+  const lines = [];
   let line = "";
-  for (const handle of handles) {
+  for (const handle in handles) {
     if (line.length + handle.length + 1 > LENGTH) {
-      console.log(line);
+      lines.push(line);
       line = "";
     }
-    line += handle + " ";
+    if (line.length > 0) {
+      line += " ";
+    }
+    line += handle;
+  }
+  if (line.length > 0) {
+    lines.push(line);
   }
 
-  console.log(line);
+  console.log(lines.join(" "));
 
   //console.log(handles.join(" "));
 }
