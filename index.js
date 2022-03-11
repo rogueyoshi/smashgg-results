@@ -70,12 +70,10 @@ ${intro}
 
 ${placings.join("\n")}
 
-Full standings: https://smash.gg/${e.slug.replace(
-      "/event/",
-      "/events/"
-    )}/standings`);
-  }
+📃 https://smash.gg/${e.slug.replace("/event/", "/events/")}/standings
 
+🎞 https://www.youtube.com/watch?v=_&list=_&index=1`);
+  }
   console.log(messages.join("\n---------\n"));
 }
 
